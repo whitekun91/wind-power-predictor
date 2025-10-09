@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 # Original Wind load .xlsx file and save as .csv
 class Wind:
     def __init__(self):
@@ -9,6 +10,7 @@ class Wind:
         self.dataset = pd.read_excel(dataset_path, sheet_name=sht_num)
         return self.dataset
 
+
 # Original Weather load .xlsx file and save as .csv
 class Weather:
     def __init__(self):
@@ -17,6 +19,7 @@ class Weather:
     def weather_raw_data_load(self, dataset_path):
         self.dataset = pd.read_csv(dataset_path)
         return self.dataset
+
 
 class WindWeather:
     def __init__(self):
