@@ -1,0 +1,11 @@
+# configs/config.yaml
+data:
+  raw_path: ./dataset/raw_data
+  merged_path: ./dataset/merged_data
+model:
+  batch_size: 32
+  activation: relu
+  neurons: 64
+  dropout: 0.1
+visualization:
+  output_path: ./predictionresult

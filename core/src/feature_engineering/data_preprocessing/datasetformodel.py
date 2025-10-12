@@ -66,7 +66,7 @@ def before_scaling(dataset):
     return test_set_time_dummy, column_list, train_x, train_y, test_x, test_y
 
 
-"""Generating historical wind power generation data"""
+"""Generating historical wind power generation dataset"""
 class ModelPreprocess(ModelDataset):
     def __init__(self, dataset):
         self.dataset = dataset
@@ -76,13 +76,13 @@ class ModelPreprocess(ModelDataset):
         self.dataset = self.dataset.reset_index(drop=True)
         print(self.dataset.info())
 
-    # Not generating historical power generation data
+    # Not generating historical power generation dataset
     def data_processing_h0(self):
         x_data, y_data = before_making_lookback(self.dataset)
         self.dataset = after_making_lookback(x_data, y_data)
         return self.dataset
 
-    # Generating historical power generation data (before 3 hours)
+    # Generating historical power generation dataset (before 3 hours)
     def data_processing_h1(self, label):
         x_data, y_data = before_making_lookback(self.dataset)
 
@@ -93,7 +93,7 @@ class ModelPreprocess(ModelDataset):
         self.dataset = after_making_lookback(x_data, y_data)
         return self.dataset
 
-    # Generating historical power generation data (before 6 hours)
+    # Generating historical power generation dataset (before 6 hours)
     def data_processing_h2(self, label):
         x_data, y_data = before_making_lookback(self.dataset)
 
@@ -104,7 +104,7 @@ class ModelPreprocess(ModelDataset):
         self.dataset = after_making_lookback(x_data, y_data)
         return self.dataset
 
-    # Generating historical power generation data (before 9 hours)
+    # Generating historical power generation dataset (before 9 hours)
     def data_processing_h3(self, label):
         x_data, y_data = before_making_lookback(self.dataset)
 
@@ -115,7 +115,7 @@ class ModelPreprocess(ModelDataset):
         self.dataset = after_making_lookback(x_data, y_data)
         return self.dataset
 
-    # Generating historical power generation data (before 12 hours)
+    # Generating historical power generation dataset (before 12 hours)
     def data_processing_h4(self, label):
         x_data, y_data = before_making_lookback(self.dataset)
 
@@ -126,7 +126,7 @@ class ModelPreprocess(ModelDataset):
         self.dataset = after_making_lookback(x_data, y_data)
         return self.dataset
 
-    # Generating historical power generation data (before 15 hours)
+    # Generating historical power generation dataset (before 15 hours)
     def data_processing_h5(self, label):
         x_data, y_data = before_making_lookback(self.dataset)
 
