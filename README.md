@@ -9,7 +9,6 @@
 
 <p align="center">
   <a href="#실행-방법">실행 방법</a> &nbsp;|&nbsp;
-  <a href="#프로젝트-구조">프로젝트 구조</a> &nbsp;|&nbsp;
   <a href="README.en.md" lang="en">English</a> &nbsp;|&nbsp;
   <a href="assets/readme-banner.webp">정지 이미지</a>
 </p>
@@ -18,7 +17,7 @@
 
 ### 설치
 
-Python 3.10 이상. 저장소 루트에서 편집 가능 모드로 패키지 설치
+Python 3.10 이상 필요. 저장소 루트에서 편집 가능 모드로 패키지 설치
 
 ```sh
 python -m pip install -e .
