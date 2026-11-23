@@ -1,68 +1,24 @@
-<p align="center"><strong>한국어</strong> &nbsp;|&nbsp; <a href="README.en.md">English</a></p>
+<h1 align="center">풍력 발전량 예측</h1>
+<p align="center">기상 예보와 과거 발전량을 활용한 제주 풍력 사례 연구</p>
+
+<div align="center">
 
 ![풍차가 돌고 파도와 구름이 움직이는 제주 해안 풍력단지 배너](assets/readme-banner.gif)
 
-<p align="center"><sub><a href="assets/readme-banner.webp">정지 이미지</a></sub></p>
+</div>
 
-<h1 align="center">풍력 발전량 예측</h1>
-<p align="center"><strong>기상 예보와 과거 발전량을 활용한 제주 풍력 사례 연구</strong></p>
 <p align="center">
-  <img alt="Python 3.10 이상" src="https://img.shields.io/badge/Python-3.10%2B-166C79?style=flat-square&amp;logo=python&amp;logoColor=white">
-  <img alt="PyTorch DNN" src="https://img.shields.io/badge/DNN-PyTorch-984728?style=flat-square&amp;logo=pytorch&amp;logoColor=white">
-  <a href="wind_power_predictor/configs/experiment.yaml"><img alt="YAML 실험 설정" src="https://img.shields.io/badge/Config-YAML-304F64?style=flat-square"></a>
-</p>
-<p align="center">
-  <a href="#프로젝트-구조">프로젝트 구조</a> &nbsp;|&nbsp;
   <a href="#실행-방법">실행 방법</a> &nbsp;|&nbsp;
-  <a href="#원본-논문">원본 논문</a>
+  <a href="#프로젝트-구조">프로젝트 구조</a> &nbsp;|&nbsp;
+  <a href="README.en.md" lang="en">English</a> &nbsp;|&nbsp;
+  <a href="assets/readme-banner.webp">정지 이미지</a>
 </p>
-
-## 공개 이력
-
-- v2.0.0 공개 (패키지 및 YAML 설정 통합, PyTorch 전환, 메모리 내 데이터 병합)
-- v1.0.0 공개
-
-## 개요
-
-- **예측 조건** 4시간 선행 기상 예보와 3시간 단위 과거 발전량 사용
-- **연구 대상** 제주 한경 1구역, 한경 2구역, 성산 풍력발전소
-
-```mermaid
-flowchart TB
-    A["발전량 Excel<br/>기상 예보 CSV"] --> B["메모리 내 병합"]
-    B --> C["과거 발전량 특성"]
-    C --> D["ML 회귀"]
-    C --> E["PyTorch DNN"]
-    D --> F["예측 CSV<br/>평가 지표와 그래프"]
-    E --> F
-    classDef data fill:#163845,stroke:#4AB9B3,color:#FFFFFF;
-    classDef model fill:#245D62,stroke:#6DD9C5,color:#FFFFFF;
-    classDef result fill:#784225,stroke:#E6A76D,color:#FFFFFF;
-    class A,B,C data;
-    class D,E model;
-    class F result;
-```
-
-## 프로젝트 구조
-
-| 경로 | 역할 |
-| --- | --- |
-| [`wind_power_predictor/configs/experiment.yaml`](wind_power_predictor/configs/experiment.yaml) | 데이터, 특성, 모델 및 출력 설정 |
-| [`wind_power_predictor/models/`](wind_power_predictor/models) | ML 회귀 모델과 PyTorch DNN 예측 모델 |
-| [`wind_power_predictor/datasets/`](wind_power_predictor/datasets) | 발전량과 기상 원천 데이터 읽기 |
-| [`wind_power_predictor/preprocessing/`](wind_power_predictor/preprocessing) | 발전량 집계, 기상 예보 선택, 시각 기준 병합 |
-| [`wind_power_predictor/features/`](wind_power_predictor/features) | 과거 발전량 특성 생성, 학습·평가 분할, 스케일링 |
-| [`wind_power_predictor/reporting/`](wind_power_predictor/reporting) | 예측 결과 저장, 변수 중요도, 결과 병합과 시각화 |
-| [`wind_power_predictor/experiment.py`](wind_power_predictor/experiment.py) | 발전소 및 과거 발전량 입력 개수별 학습 흐름 |
-| [`wind_power_predictor/scripts/`](wind_power_predictor/scripts) | ML과 DNN 학습 명령 |
-| [`wind_power_predictor/tests/`](wind_power_predictor/tests) | 패키지에 포함된 회귀 테스트 |
-| [`examples/`](examples) | 패키지 외부에 보존한 연구용 원본 스크립트 |
 
 ## 실행 방법
 
 ### 설치
 
-저장소 루트에서 편집 가능 모드로 패키지 설치
+Python 3.10 이상. 저장소 루트에서 편집 가능 모드로 패키지 설치
 
 ```sh
 python -m pip install -e .
@@ -73,22 +29,6 @@ Windows CPU에서 DNN 학습 시 PyTorch 별도 설치 (검증 버전 `2.15.0+cp
 ```sh
 python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
 ```
-
-#### 필수 라이브러리
-
-패키지 설치 시 함께 설치되는 주요 라이브러리. [전체 설치 목록](requirements.txt)
-
-| 라이브러리 | 버전 조건 | 용도 |
-| --- | --- | --- |
-| NumPy | `==1.26.4` | 배열 연산 |
-| pandas | `==2.2.1` | 데이터 읽기, 전처리 및 병합 |
-| openpyxl | `>=3.1,<4` | 발전량 엑셀 파일 읽기 |
-| PyYAML | `>=6,<7` | 실험 설정 읽기 |
-| scikit-learn | `==1.4.1.post1` | 회귀 모델, 스케일링 및 평가 지표 |
-| LightGBM | `==4.3.0` | LightGBM 회귀 모델 |
-| XGBoost | `>=2,<4` | XGBoost 회귀 모델과 변수 중요도 |
-| Matplotlib | `>=3.8,<4` | 예측 그래프 저장 |
-| Plotly | `>=5,<8` | 대화형 예측 결과 시각화 |
 
 ### 입력 데이터
 
@@ -127,6 +67,60 @@ python -m wind_power_predictor.scripts.train_dnn ./dataset/rawdata hk1 --history
 python -m unittest discover -s wind_power_predictor/tests -v
 ```
 
+### 필수 라이브러리
+
+패키지 설치 시 함께 설치되는 주요 라이브러리. [전체 설치 목록](requirements.txt)
+
+| 라이브러리 | 버전 조건 | 용도 |
+| --- | --- | --- |
+| NumPy | `==1.26.4` | 배열 연산 |
+| pandas | `==2.2.1` | 데이터 읽기, 전처리 및 병합 |
+| openpyxl | `>=3.1,<4` | 발전량 엑셀 파일 읽기 |
+| PyYAML | `>=6,<7` | 실험 설정 읽기 |
+| scikit-learn | `==1.4.1.post1` | 회귀 모델, 스케일링 및 평가 지표 |
+| LightGBM | `==4.3.0` | LightGBM 회귀 모델 |
+| XGBoost | `>=2,<4` | XGBoost 회귀 모델과 변수 중요도 |
+| Matplotlib | `>=3.8,<4` | 예측 그래프 저장 |
+| Plotly | `>=5,<8` | 대화형 예측 결과 시각화 |
+
+## 개요
+
+- **예측 조건** 4시간 선행 기상 예보와 3시간 단위 과거 발전량 사용
+- **연구 대상** 제주 한경 1구역, 한경 2구역, 성산 풍력발전소
+
+```mermaid
+flowchart LR
+    A["발전량 + 기상 예보"] --> B["병합 및 특성 생성"]
+    B --> C["ML 회귀 / PyTorch DNN"]
+    C --> D["예측 및 평가"]
+    classDef data fill:#163845,stroke:#4AB9B3,color:#FFFFFF;
+    classDef model fill:#245D62,stroke:#6DD9C5,color:#FFFFFF;
+    classDef result fill:#784225,stroke:#E6A76D,color:#FFFFFF;
+    class A,B data;
+    class C model;
+    class D result;
+```
+
+## 프로젝트 구조
+
+| 경로 | 역할 |
+| --- | --- |
+| [`wind_power_predictor/configs/experiment.yaml`](wind_power_predictor/configs/experiment.yaml) | 데이터, 특성, 모델 및 출력 설정 |
+| [`wind_power_predictor/models/`](wind_power_predictor/models) | ML 회귀 모델과 PyTorch DNN 예측 모델 |
+| [`wind_power_predictor/datasets/`](wind_power_predictor/datasets) | 발전량과 기상 원천 데이터 읽기 |
+| [`wind_power_predictor/preprocessing/`](wind_power_predictor/preprocessing) | 발전량 집계, 기상 예보 선택, 시각 기준 병합 |
+| [`wind_power_predictor/features/`](wind_power_predictor/features) | 과거 발전량 특성 생성, 학습과 평가 데이터 분할, 스케일링 |
+| [`wind_power_predictor/reporting/`](wind_power_predictor/reporting) | 예측 결과 저장, 변수 중요도, 결과 병합과 시각화 |
+| [`wind_power_predictor/experiment.py`](wind_power_predictor/experiment.py) | 발전소 및 과거 발전량 입력 개수별 학습 흐름 |
+| [`wind_power_predictor/scripts/`](wind_power_predictor/scripts) | ML과 DNN 학습 명령 |
+| [`wind_power_predictor/tests/`](wind_power_predictor/tests) | 패키지에 포함된 회귀 테스트 |
+| [`examples/`](examples) | 패키지 외부에 보존한 연구용 원본 스크립트 |
+
 ## 원본 논문
 
 Min-Woo Baek, Min Kyu Sim, Jae-Yoon Jung (2020년 9월). *Wind Power Generation Prediction Based on Weather Forecast Data Using Deep Neural Networks*. [논문 PDF](http://www.icicelb.org/ellb/contents/2020/9/elb-11-09-07.pdf)
+
+## 공개 이력
+
+- v2.0.0 공개 (패키지 및 YAML 설정 통합, PyTorch 전환, 메모리 내 데이터 병합)
+- v1.0.0 공개
