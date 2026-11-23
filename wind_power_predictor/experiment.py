@@ -1,4 +1,4 @@
-from wind_power_predictor.config import DEFAULT_OUTPUT_PATH
+from wind_power_predictor.config import DEFAULT_OUTPUT_PATH, SETTINGS
 from wind_power_predictor.config import PLANTS as _PLANTS
 from wind_power_predictor.features.training import TrainingDataset
 from wind_power_predictor.models.ml import scaled_regressors, tree_regressors, xgboost_regressor
@@ -20,7 +20,7 @@ class PredictionExperiment:
         if feature_importance:
             fitted = xgboost_regressor().fit(split)
             self.report.save_importance(split.feature_names, fitted.feature_importances_, "Xgboost", history, "xgboost")
-            self.report.save(split, fitted.predict(split.test_x), "Xgboost_", history)
+            self.report.save(split, fitted.predict(split.test_x), "Xgboost", history)
             return
 
         # 정규화 모델과 트리 모델에 같은 분할을 사용해 평가 표본을 맞춥니다.
@@ -38,9 +38,13 @@ class PredictionExperiment:
 
     def train_dl(self, history):
         # ML 실행 환경에서 PyTorch 설치를 요구하지 않도록 DNN 실행 시 가져옵니다.
+        import torch
+
         from wind_power_predictor.models.dnn import DnnModel
 
         split = self.dataset.split(history).scaled()
+        # 가중치 초기화와 배치 순서를 고정해 같은 설정에서 같은 결과를 얻습니다.
+        torch.manual_seed(SETTINGS["models"]["dnn"]["seed"])
         model = DnnModel(split.train_x.shape[1])
         model.fit(split.train_x, split.train_y)
         self.report.save(split, model.predict(split.test_x), "MLP", history)

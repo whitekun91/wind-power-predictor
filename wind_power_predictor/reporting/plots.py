@@ -1,3 +1,6 @@
+from itertools import cycle
+
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -11,7 +14,7 @@ _RESIDUAL_LOWER = _PLOTS["residual_lower"]
 class PredictVisualization:
     _MODEL_COLORS = (
         "darkblue", "darkviolet", "lightcoral", "limegreen", "olive", "orange",
-        "pink", "red", "sandybrown", "steelblue", "yellow",
+        "pink", "red", "sandybrown", "steelblue", "yellow", "teal",
     )
 
     def __init__(self, dataset):
@@ -43,15 +46,16 @@ class PredictVisualization:
         self._residual_pair(fig, model_name, reference, (1, column), (2, column), font_size=15)
 
     def monthly_line_visualization(self, fig, his, month):
-        data = self.dataset.loc[self.dataset["month"] == month]
-        self._lines(fig, data, data.columns[1:13], ("olivedrab", *self._MODEL_COLORS), his + 1)
+        data = self._rows(month)
+        columns = ["actual_value", *self._prediction_columns(data)]
+        self._lines(fig, data, columns, ("olivedrab", *self._MODEL_COLORS), his + 1)
 
     def h2h3_yearly_line_visualization(self, fig):
         self._grouped_lines(fig, self.dataset)
 
     def h2h3_monthly_line_visualization(self, fig, month):
         # 연간 그래프와 같은 모델 구성을 사용하되 선택한 달만 표시합니다.
-        self._grouped_lines(fig, self.dataset.loc[self.dataset["month"] == month])
+        self._grouped_lines(fig, self._rows(month))
 
     def h4_one_day_lineplot(self, fig, month_list, day):
         # 월을 일부만 선택해도 분기별 그래프의 행 위치는 유지합니다.
@@ -65,7 +69,9 @@ class PredictVisualization:
     def _plant_layout(self, plant):
         # 연구에서 사용한 발전소별 배치와 기준선 범위는 실험 설정에서 읽습니다.
         plants = _PLOTS["plants"]
-        layout = plants.get(plant, plants[_PLOTS["default_plant"]])
+        if plant not in plants:
+            raise ValueError(f"Unknown wind plant: {plant}")
+        layout = plants[plant]
         return layout["column"], layout["actual_range"], layout["residual_upper"]
 
     def _scatter(self, fig, name, x_column, y_column, reference, position, *, residual=False, font_size=10):
@@ -99,24 +105,39 @@ class PredictVisualization:
         )
 
     def _grouped_lines(self, fig, data):
-        # 병합 CSV의 열 순서에 따라 단일 모델과 앙상블 모델을 두 행에 나눕니다.
+        # 병합 CSV의 모델 순서에 따라 단일 모델과 앙상블 모델을 두 행에 나눕니다.
+        predictions = self._prediction_columns(data)
         for row, columns, colors in (
-            (1, data.columns[2:8], self._MODEL_COLORS[:6]),
-            (2, data.columns[8:13], self._MODEL_COLORS[6:]),
+            (1, predictions[:6], self._MODEL_COLORS[:6]),
+            (2, predictions[6:], self._MODEL_COLORS[6:]),
         ):
             self._lines(fig, data, ["actual_value", *columns], ("olivedrab", *colors), row)
 
     def _day_lines(self, fig, month, day, row, model_colors, *, legend):
-        data = self.dataset.loc[(self.dataset["month"] == month) & (self.dataset["day"] == day)]
+        data = self._rows(month, day)
         # 여러 날짜를 한 그림에 배치할 때 범례를 한 번만 표시합니다.
         showlegend = None if legend else False
         self._lines(fig, data, ["actual_value"], ["black"], row, width=3, showlegend=showlegend)
-        self._lines(fig, data, data.columns[2:13], model_colors, row, showlegend=showlegend)
+        self._lines(fig, data, self._prediction_columns(data), model_colors, row, showlegend=showlegend)
         self._axes(fig, (row, 1), "Time", "Power [kW]", 15)
+
+    def _rows(self, month, day=None):
+        # 월과 일은 별도 열 없이 예측 대상 시각에서 직접 읽습니다.
+        times = pd.to_datetime(self.dataset["tgt_datetime"])
+        selected = times.dt.month == month
+        if day is not None:
+            selected &= times.dt.day == day
+        return self.dataset.loc[selected]
+
+    @staticmethod
+    def _prediction_columns(data):
+        # 열 위치 대신 이름으로 골라 병합한 모델 수가 달라져도 모든 예측값을 그립니다.
+        return [column for column in data.columns if column.endswith("_predict")]
 
     @staticmethod
     def _lines(fig, data, columns, colors, row, *, width=1, showlegend=None):
-        for column, color in zip(columns, colors):
+        # 모델이 색상보다 많으면 색상을 처음부터 다시 사용합니다.
+        for column, color in zip(columns, cycle(colors)):
             fig.add_trace(
                 go.Scatter(
                     x=data["tgt_datetime"], y=data[column], mode="lines+markers", name=column,

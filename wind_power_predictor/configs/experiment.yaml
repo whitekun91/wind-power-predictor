@@ -47,6 +47,7 @@ models:
     xgboost: {objective: "reg:squarederror"}
     lightgbm: {objective: regression}
   dnn:
+    seed: 1
     hidden_layers: 4
     hidden_units: 64
     epochs: 100
@@ -60,7 +61,6 @@ reporting:
   figure_size: [20, 7]
   merge_tolerance: {rtol: 1.0e-7, atol: 1.0e-8}
   plots:
-    default_plant: ss
     plants:
       hk1: {column: 1, actual_range: [-250, 1800], residual_upper: 2000}
       hk2: {column: 2, actual_range: [-500, 3400], residual_upper: 3500}
