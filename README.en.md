@@ -1,9 +1,8 @@
 <p align="center"><a href="README.md">한국어</a> &nbsp;|&nbsp; <strong>English</strong></p>
 
-<picture>
-  <source media="(prefers-reduced-motion: reduce)" srcset="assets/readme-banner.webp">
-  <img src="assets/readme-banner-motion.webp" alt="Jeju-inspired coastal wind farm with spinning turbines, breaking waves, and drifting clouds">
-</picture>
+![Jeju-inspired coastal wind farm with spinning turbines, breaking waves, and drifting clouds](assets/readme-banner.gif)
+
+<p align="center"><sub><a href="assets/readme-banner.webp">Still image</a></sub></p>
 
 <h1 align="center">Wind Power Predictor</h1>
 <p align="center"><strong>A Jeju case study using weather forecasts and historical power output</strong></p>

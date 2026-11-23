@@ -1,9 +1,8 @@
 <p align="center"><strong>한국어</strong> &nbsp;|&nbsp; <a href="README.en.md">English</a></p>
 
-<picture>
-  <source media="(prefers-reduced-motion: reduce)" srcset="assets/readme-banner.webp">
-  <img src="assets/readme-banner-motion.webp" alt="풍차가 돌고 파도와 구름이 움직이는 제주 해안 풍력단지 배너">
-</picture>
+![풍차가 돌고 파도와 구름이 움직이는 제주 해안 풍력단지 배너](assets/readme-banner.gif)
+
+<p align="center"><sub><a href="assets/readme-banner.webp">정지 이미지</a></sub></p>
 
 <h1 align="center">풍력 발전량 예측</h1>
 <p align="center"><strong>기상 예보와 과거 발전량을 활용한 제주 풍력 사례 연구</strong></p>
