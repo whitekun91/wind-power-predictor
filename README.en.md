@@ -9,8 +9,7 @@
 
 <p align="center">
   <a href="#how-to-run">How to run</a> &nbsp;|&nbsp;
-  <a href="README.md" lang="ko">한국어</a> &nbsp;|&nbsp;
-  <a href="assets/readme-banner.webp">Still image</a>
+  <a href="README.md" lang="ko">한국어</a>
 </p>
 
 ## How to run

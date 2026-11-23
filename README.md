@@ -9,8 +9,7 @@
 
 <p align="center">
   <a href="#실행-방법">실행 방법</a> &nbsp;|&nbsp;
-  <a href="README.en.md" lang="en">English</a> &nbsp;|&nbsp;
-  <a href="assets/readme-banner.webp">정지 이미지</a>
+  <a href="README.en.md" lang="en">English</a>
 </p>
 
 ## 실행 방법
