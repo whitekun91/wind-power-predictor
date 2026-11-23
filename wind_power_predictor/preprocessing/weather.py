@@ -1,7 +1,9 @@
 import pandas as pd
 
 from wind_power_predictor.config import SETTINGS
-from wind_power_predictor.preprocessing.time import FORECAST_LEAD_HOURS, SLOT_HOURS, target_time_columns
+from wind_power_predictor.preprocessing.time import (
+    FORECAST_LEAD_HOURS, SLOT_HOURS, report_irregular_times, target_time_columns,
+)
 
 
 _WEATHER = SETTINGS["data"]["weather"]
@@ -12,6 +14,15 @@ def prepare_forecast(forecasts, variable, year):
         raise ValueError("Weather CSV requires a forecast column and a fourth column with forecast values")
     # 원본 CSV의 네 번째 열에서 설정한 선행 시간의 예보값을 선택합니다.
     values = forecasts.loc[forecasts["forecast"].eq(FORECAST_LEAD_HOURS)].iloc[:, 3].reset_index(drop=True)
+    # 발표 시각은 행 순서로 만들기 때문에 한 해의 발표 횟수와 다르면 알립니다.
+    expected = len(pd.date_range(
+        f"{year}-01-01 {_WEATHER['first_issue_time']}", f"{year + 1}-01-01", freq=f"{SLOT_HOURS}h", inclusive="left",
+    ))
+    if len(values) != expected:
+        report_irregular_times(
+            f"{variable} {year}: found {len(values)} forecasts but expected {expected}; "
+            "issue times generated from row order may be shifted"
+        )
     issued = pd.date_range(f"{year}-01-01 {_WEATHER['first_issue_time']}", periods=len(values), freq=f"{SLOT_HOURS}h")
     return pd.DataFrame({
         variable: values,

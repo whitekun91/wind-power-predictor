@@ -20,7 +20,11 @@ def run_training(description, *, ml=False):
         )
 
     args = parser.parse_args()
-    frame = prepare_dataset(args.raw_data, args.plant)
+    try:
+        frame = prepare_dataset(args.raw_data, args.plant)
+    except (FileNotFoundError, ValueError) as error:
+        # 원천 자료 문제는 추적 정보 대신 원인만 보여 주고 종료합니다.
+        parser.error(str(error))
     experiment = PredictionExperiment(frame, args.plant, args.output)
     train = partial(experiment.train_ml, feature_importance=args.feature_importance) if ml else experiment.train_dl
     # 입력 개수를 지정하지 않으면 실험 설정에 등록된 값을 모두 평가합니다.

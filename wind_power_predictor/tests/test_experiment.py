@@ -10,8 +10,8 @@ class PredictionExperimentTest(unittest.TestCase):
     def test_history_settings_share_original_rows_and_keep_the_same_test_dates(self):
         raw = pd.DataFrame({
             "tgt_Y": [2016] * 8 + [2017] * 4,
-            "tgt_M": 1,
-            "tgt_D": 1,
+            "tgt_M": [12] * 8 + [1] * 4,
+            "tgt_D": [31] * 8 + [1] * 4,
             "tgt_tz": list(range(8)) + list(range(4)),
             "raintype": 0,
             "skystatus": 1,
@@ -38,3 +38,13 @@ class PredictionExperimentTest(unittest.TestCase):
         np.testing.assert_allclose(scaled_again.original_target(scaled_again.test_y), split.test_y.ravel())
         self.assertGreater(scaled.test_y[0, 0], 1)
         self.assertEqual(split.test_dates.tolist(), list(pd.date_range("2017-01-01", periods=3, freq="3h")))
+
+    def test_history_follows_target_times_when_an_observation_is_missing(self):
+        raw = pd.DataFrame({
+            "tgt_Y": 2016, "tgt_M": 12, "tgt_D": 31, "tgt_tz": range(8),
+            "raintype": 0, "skystatus": 1, "seawave": 0, "hk1": range(8),
+        })
+        # 15시 관측이 빠지면 그 값을 과거 발전량으로 쓰는 21시 행만 제외해야 합니다.
+        features = PredictionExperiment(raw.drop(index=5), "hk1").dataset.features(1)
+        self.assertEqual(features["hk1"].tolist(), [2, 3, 4, 6])
+        self.assertEqual(features["y_t2h"].tolist(), [0, 1, 2, 4])

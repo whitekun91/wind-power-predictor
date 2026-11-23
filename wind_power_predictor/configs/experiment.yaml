@@ -14,6 +14,8 @@ data:
       wind_sheet: 0
       weather_site: seongsan
   slot_hours: 3
+  # 원천 자료의 시각이 측정 및 발표 간격과 어긋나면 중단합니다. false로 두면 경고만 남기고 계속합니다.
+  strict_source_times: true
   wind:
     sampling_minutes: 10
     skip_readings: 28

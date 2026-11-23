@@ -1,21 +1,35 @@
 import unittest
+import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 
+from wind_power_predictor.config import SETTINGS
 from wind_power_predictor.datasets.weather import WeatherDataset
 from wind_power_predictor.datasets.wind import WindDataset
 from wind_power_predictor.preprocessing.merge import WindWeatherMerge
 from wind_power_predictor.preprocessing.prepare import prepare_dataset
+from wind_power_predictor.preprocessing.weather import prepare_forecast
 
 
 class DatasetTest(unittest.TestCase):
+    def setUp(self):
+        # 축약한 시험 자료를 쓰므로 엄격 모드를 끄고, 경고와 오류는 전용 테스트에서만 확인합니다.
+        strict = patch.dict(SETTINGS["data"], {"strict_source_times": False})
+        strict.start()
+        self.addCleanup(strict.stop)
+        context = warnings.catch_warnings()
+        context.__enter__()
+        self.addCleanup(context.__exit__, None, None, None)
+        warnings.simplefilter("ignore", UserWarning)
+
     def test_raw_generation_and_weather_join(self):
         # 첫 28개 관측값을 제외하면 완전한 집계 구간과 부분 구간이 하나씩 남습니다.
         readings = pd.DataFrame({
-            "PCTimeStamp": "2014-01-01 00:00:00",
+            "PCTimeStamp": pd.date_range("2014-01-01", periods=47, freq="10min"),
             "generator_1": [0] * 28 + [-2, 18] * 9 + [36],
             "generator_2": -3,
         })
@@ -44,7 +58,7 @@ class DatasetTest(unittest.TestCase):
 
     def test_prepare_dataset_reads_the_configured_workbook_sheet_and_returns_a_frame(self):
         readings = pd.DataFrame({
-            "PCTimeStamp": "2014-01-01",
+            "PCTimeStamp": pd.date_range("2014-01-01", periods=64, freq="10min"),
             "generator": [0] * 28 + [1000] * 18 + [2000] * 18,
         })
         with TemporaryDirectory() as directory:
@@ -68,3 +82,45 @@ class DatasetTest(unittest.TestCase):
             self.assertEqual(set(root.rglob("*")), source_paths)
 
         self.assertEqual(merged[["temp3h", "hk2"]].values.tolist(), [[10, 6], [20, 12]])
+
+    def test_row_order_times_warn_when_source_rows_are_missing(self):
+        readings = pd.DataFrame({
+            "PCTimeStamp": pd.date_range("2014-01-01", periods=47, freq="10min"),
+            "generator": 1,
+        })
+        # 측정값 한 행이 빠지면 이후 대상 시각이 밀리므로 경고해야 합니다.
+        with self.assertWarnsRegex(UserWarning, "1 readings are off the 10-minute sampling grid"):
+            WindDataset(readings.drop(index=30)).prepare("hk1")
+
+        forecasts = pd.DataFrame({"day": 1, "hour": 200, "forecast": 4, "value": range(2919)})
+        with self.assertWarnsRegex(UserWarning, "found 2919 forecasts but expected 2920"):
+            prepare_forecast(forecasts, "temp3h", 2014)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            prepare_forecast(pd.concat([forecasts, forecasts.iloc[:1]]), "temp3h", 2014)
+
+    def test_strict_mode_stops_on_shifted_times_and_names_missing_sources(self):
+        readings = pd.DataFrame({
+            "PCTimeStamp": pd.date_range("2014-01-01", periods=47, freq="10min"),
+            "generator": 1,
+        })
+        forecasts = pd.DataFrame({"day": 1, "hour": 200, "forecast": 4, "value": range(2919)})
+        # 기본 설정에서는 밀린 시각으로 학습하지 않도록 오류로 중단해야 합니다.
+        with patch.dict(SETTINGS["data"], {"strict_source_times": True}):
+            with self.assertRaisesRegex(ValueError, "first at row 30.*strict_source_times"):
+                WindDataset(readings.drop(index=30)).prepare("hk1")
+            with self.assertRaisesRegex(ValueError, "found 2919 forecasts but expected 2920"):
+                prepare_forecast(forecasts, "temp3h", 2014)
+            self.assertEqual(len(WindDataset(readings).prepare("hk1")), 2)
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaisesRegex(FileNotFoundError, "hk2 wind workbook not found"):
+                prepare_dataset(root, "hk2")
+            workbook = root / "wind" / "붙임1_한경풍력 발전실적 정보.xlsx"
+            workbook.parent.mkdir()
+            readings.to_excel(workbook, index=False)
+            with self.assertRaisesRegex(ValueError, "hk2: cannot read sheet 1"):
+                prepare_dataset(root, "hk2")
+            with self.assertRaisesRegex(FileNotFoundError, "hk1 temp3h 2014 weather forecast not found"):
+                prepare_dataset(root, "hk1")
