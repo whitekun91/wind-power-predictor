@@ -1,0 +1,68 @@
+# 데이터 수집과 예보 시각에 적용하는 원본 실험 조건입니다.
+data:
+  plants:
+    hk1:
+      wind_file: "wind/붙임1_한경풍력 발전실적 정보.xlsx"
+      wind_sheet: 0
+      weather_site: hankyeong
+    hk2:
+      wind_file: "wind/붙임1_한경풍력 발전실적 정보.xlsx"
+      wind_sheet: 1
+      weather_site: hankyeong
+    ss:
+      wind_file: "wind/붙임2_성산풍력 발전실적 정보.xlsx"
+      wind_sheet: 0
+      weather_site: seongsan
+  slot_hours: 3
+  wind:
+    sampling_minutes: 10
+    skip_readings: 28
+    first_target_time: "2014-01-01 06:00"
+    convert_to_kw: [hk2, ss]
+    kw_multiplier: 6
+    kw_divisor: 1000
+  weather:
+    years: [2014, 2015, 2016, 2017]
+    file_pattern: "weather/{site}/{year}/weather_forecast_{variable}.csv"
+    first_issue_time: "02:00"
+    lead_hours: 4
+
+# 결측 제거 후 남은 관측 행에서 과거 발전량을 선택합니다.
+features:
+  history_counts: [0, 1, 2, 3, 4, 5]
+  first_lag_rows: 2
+  test_year: 2017
+  drop_final_row: true
+  excluded_weather: [seawave]
+  categorical_weather: [raintype, skystatus]
+  scale_range: [0, 1]
+
+models:
+  ml:
+    random_state: 1
+    linear: {fit_intercept: true}
+    elastic_net: {cv: 3, random_state: 0}
+    svr: {max_iter: 10000}
+    random_forest: {n_estimators: 100, criterion: squared_error}
+    xgboost: {objective: "reg:squarederror"}
+    lightgbm: {objective: regression}
+  dnn:
+    hidden_layers: 4
+    hidden_units: 64
+    epochs: 100
+    batch_size: 32
+    validation_fraction: 0.2
+    l1_l2: 0.0001
+    nadam: {lr: 0.001, eps: 1.0e-7, momentum_decay: 1.0}
+
+reporting:
+  output_path: predictionresult
+  figure_size: [20, 7]
+  merge_tolerance: {rtol: 1.0e-7, atol: 1.0e-8}
+  plots:
+    default_plant: ss
+    plants:
+      hk1: {column: 1, actual_range: [-250, 1800], residual_upper: 2000}
+      hk2: {column: 2, actual_range: [-500, 3400], residual_upper: 3500}
+      ss: {column: 3, actual_range: [-150, 2300], residual_upper: 2500}
+    residual_lower: -500
